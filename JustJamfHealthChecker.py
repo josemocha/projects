@@ -9,7 +9,7 @@
 ##python3 -m pip install requests
 
 import requests
-jURL = "https://josemocha.jamfcloud.com/healthCheck.html"
+jURL = "https://YourJamfPro.jamfcloud.com/healthCheck.html"
 headers = {"Accept": "application/xml"}
 healthStatus = requests.request("GET", jURL, headers=headers)
 print (healthStatus.text)
