@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#This script will prompt a user to choose where or not to install zoom. Based on the choice made it will either install zoom or exit out with a message to install zoom soon. 
+#This script will prompt a user to choose whether or not to install zoom. Based on the choice made it will either install zoom or exit out with a message to install zoom soon. 
 userPrompt=$(osascript -e 'display dialog "Do you want to install Zoom" buttons {"YES", "NO"} default button 1'| tr -d "button returned:")
 
 if [[ "$userPrompt" == "YES" ]]; then
