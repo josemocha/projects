@@ -1,1 +1,20 @@
 
+#!/bin/bash
+
+########Variables#########
+jUNPW="username:password"
+basicAuth=$(echo -n $jUNPW | base64)
+jURL="https://YourJamfProHere.jamfcloud.com"
+macSerial=$(system_profiler SPHardwareDataType | awk '/Serial Number/{print $4}')
+pathToFile="/tmp/RecentAirdropfiles.txt"
+
+######Get bearer token############
+#Get Bearer Token with Basic Auth
+bToken=$(curl -sk -X POST "$jURL/api/v1/auth/token" -H "accept: application/json" -H "Authorization: Basic $basicAuth" | awk '/token/{print $3}' | tr -d '"'',')
+
+######Find Airdrop Files############
+mdfind 'kMDItemUserSharedReceivedTransport == "*com.apple.AirDrop*"' > "$pathToFile"
+
+######Send files############
+compID=$(curl -sk -H "Authorization: Bearer $bToken" -H "accept: application/xml" "$jURL/JSSResource/computers/serialnumber/$macSerial" | xmllint --xpath '/computer/general/id/text()' -)
+curl -sk -H "Authorization: Bearer $bToken" -H "accept: application/xml" "$jURL/JSSResource/fileuploads/computers/id/$compID" -F name=@"$pathToFile" -X POST
