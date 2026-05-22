@@ -1,0 +1,37 @@
+#!/bin/zsh
+
+#Define Current Date: 
+currentDate=$(date +"%m%d%Y")
+
+#Define Customer Name:
+CustomerName=$(osascript -e 'text returned of (display dialog "Enter text:" default answer "Customer Name")')
+
+##Define Project Name:
+ProjectNameName=$(osascript -e 'text returned of (display dialog "Enter text:" default answer "Project Name")')
+
+
+##Choose and Define Folder Path
+selected_path=$(
+osascript <<'APPLESCRIPT'
+	set chosenFolder to choose folder with prompt "Select a folder:"
+	return POSIX path of chosenFolder
+APPLESCRIPT
+)
+#Redefine and Combine Folder Name
+FolderPathName="${currentDate}${CustomerName}${ProjectNameName}"
+
+#Make Project Subfolders
+mkdir -p "/$selected_path/$FolderPathName"
+mkdir -p "/$selected_path/$FolderPathName/01_ADMIN"
+mkdir -p "/$selected_path/$FolderPathName/02_CAMERA"
+mkdir -p "/$selected_path/$FolderPathName/03_AUDIO"
+mkdir -p "/$selected_path/$FolderPathName/04_DAILIES"
+mkdir -p "/$selected_path/$FolderPathName/05_PROJECT_FILES"
+mkdir -p "/$selected_path/$FolderPathName/06_GRAPHICS"
+mkdir -p "/$selected_path/$FolderPathName/07_MUSIC"
+mkdir -p "/$selected_path/$FolderPathName/08_SFX"
+mkdir -p "/$selected_path/$FolderPathName/09_COLOR"
+mkdir -p "/$selected_path/$FolderPathName/10_VFX"
+mkdir -p "/$selected_path/$FolderPathName/11_EXPORTS"
+mkdir -p "/$selected_path/$FolderPathName/11_DELIVERABLES"
+mkdir -p "/$selected_path/$FolderPathName/13_ARCHIVE"
