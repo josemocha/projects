@@ -1,0 +1,210 @@
+#!/bin/zsh --no-rcs
+
+##https://jsontotable.org/hcl-validator
+
+
+###Building
+cat > ~/Desktop/buildings.tf << COREB
+resource "jamfpro_building" "New York" {
+	name            = "New York"
+	street_address1 = "123 New York"
+	street_address2 = ""
+	city            = "New York"
+	state_province  = "New York"
+	zip_postal_code = "123456"
+	country         = "The United States of America"
+}
+COREB
+
+##LAPS
+#https://registry.terraform.io/providers/deploymenttheory/jamfpro/latest/docs/resources/local_admin_password_settings
+
+cat > ~/Desktop/terraform-jamfpro/laps.tf << COREB
+resource "jamfpro_local_admin_password_settings" "local_admin_password_settings_001" {
+	auto_deploy_enabled                 = true
+	password_rotation_time_seconds      = 900
+	auto_rotate_enabled                 = true
+	auto_rotate_expiration_time_seconds = 604800
+}
+COREB
+
+
+#https://registry.terraform.io/providers/deploymenttheory/jamfpro/latest/docs/resources/account
+##Jamf Pro Account
+cat > ~/Desktop/terraform-jamfpro/jamfproaccount.tf << COREB
+
+resource "jamfpro_account" "dr_laszlo_jamf" {
+	name                  = "drlaszlojamf"
+	directory_user        = false
+	full_name             = "The Wizard"
+	password              = "gravitysrainbow1973"
+	email                 = "laszlo@jamf.com"
+	enabled               = "Enabled"
+	force_password_change = true
+	access_level          = "Full Access"
+	privilege_set         = "Administrator"
+}
+COREB
+
+##Jamf Re-Enroll Settings
+#https://registry.terraform.io/providers/deploymenttheory/jamfpro/latest/docs/resources/reenrollment
+cat > ~/Desktop/terraform-jamfpro/reenroll.tf << COREB
+resource "jamfpro_reenrollment" "settings" {
+	flush_location_information         = true
+	flush_location_information_history = false
+	flush_policy_history               = true
+	flush_extension_attributes         = true
+	flush_software_update_plans        = true
+	flush_mdm_queue                    = "DELETE_EVERYTHING"
+}
+
+COREB
+
+
+###Restricted Software
+#https://registry.terraform.io/providers/deploymenttheory/jamfpro/latest/docs/resources/restricted_software
+cat > ~/Desktop/terraform-jamfpro/restrictedsofware.tf << COREB
+resource "jamfpro_restricted_software" "restricted_software_high_sierra" {
+	name                     = "tf-localtest-restrict-chess"
+	process_name             = "Chess.app"
+	match_exact_process_name = true
+	send_notification        = true
+	kill_process             = true
+	delete_executable        = false
+	display_message          = "Sorry, no Chess.."
+
+
+	scope {
+		all_computers      = false
+			}
+}
+COREB
+
+
+##Mac App Installers
+#https://registry.terraform.io/providers/deploymenttheory/jamfpro/latest/docs/resources/app_installer
+
+cat > ~/Desktop/terraform-jamfpro/appinstaller.tf << COREB
+resource "jamfpro_app_installer" "AdobeCreativeCloud" {
+	name            = "Adobe Creative Cloud"
+	app_title_name	= "Adobe Creative Cloud"
+	enabled         = false
+	deployment_type = "SELF_SERVICE"
+	update_behavior = "AUTOMATIC"
+	category_id     = "-1"
+	site_id         = "-1"
+	smart_group_id  = "1"
+
+	install_predefined_config_profiles = true
+	trigger_admin_notifications        = true
+
+	notification_settings {
+		notification_message  = "A new update is available"
+		notification_interval = 1
+		deadline_message      = "Update deadline approaching"
+		deadline              = 1
+		quit_delay            = 1
+		complete_message      = "Update completed successfully"
+		relaunch              = true
+		suppress              = false
+	}
+
+	self_service_settings {
+		include_in_featured_category   = true
+		include_in_compliance_category = true
+		force_view_description         = true
+		description                    = "This is Adobe Creative Cloud"
+
+		categories {
+			id       = "4"
+			featured = true
+		}
+	}
+}
+COREB
+
+###Jamf Pro Policy
+#https://registry.terraform.io/providers/deploymenttheory/jamfpro/latest/docs/resources/policy
+cat > ~/Desktop/terraform-jamfpro/jamfpolicy.tf << COREB
+resource "jamfpro_policy" "daily_inventory_update2" {
+	name    = "Update Inventory - On the daily"
+	enabled = true
+
+	trigger_checkin = true
+	frequency       = "Once every day"
+
+	scope {
+		all_computers = true
+	}
+
+	payloads {
+		maintenance {
+			recon = true
+		}
+	}
+}
+
+COREB
+
+
+
+##Jamf Pro Mobile EA
+#https://registry.terraform.io/providers/deploymenttheory/jamfpro/latest/docs/resources/mobile_device_extension_attribute
+cat > ~/Desktop/terraform-jamfpro/ea.tf << COREB
+resource "jamfpro_mobile_device_extension_attribute" "location_status" {
+	name                   = "Lost or Stolen"
+	description            = "Indicates whether this device is lost or stolen."
+	data_type              = "STRING"
+	input_type             = "POPUP"
+	inventory_display_type = "GENERAL"
+	popup_menu_choices     = ["Lost","Stolen"]
+}
+
+COREB
+
+
+###MacOS Smart Group
+#https://registry.terraform.io/providers/deploymenttheory/jamfpro/latest/docs/resources/smart_computer_group_v2
+cat > ~/Desktop/terraform-jamfpro/NEWsmartgrouplessthan27andDepartment.tf << COREB
+resource "jamfpro_smart_computer_group_v2" "OS_LessThan_27_Broussard" {
+	name = "Less than OS 27 and Broussard Building"
+
+	# Optional: Provide a description
+	description = "Less than OS 27 and Broussard Building."
+
+	# Optional: Specify site details 
+	##site_id = "5"
+
+	# Optional: Define criteria for Smart groups
+	criteria {
+		name        = "Operating System Version"
+		priority    = 0
+		search_type = "less than" # or any other supported search type
+		value       = "27"
+		and_or      = "and" # or "or", defaults to "and" if not provided
+		#opening_paren = false # true or false, defaults to false if not provided
+		#closing_paren = false # true or false, defaults to false if not provided
+	}
+
+	criteria {
+		name        = "Building"
+		priority    = 1
+		search_type = "is" # or any other supported search type
+		value       = "Broussard"
+		and_or      = "and"
+		#opening_paren = false # true or false, defaults to false if not provided
+		#closing_paren = false # true or false, defaults to false if not provided
+	}
+
+	#criteria {
+	#name          = "Criterion Name #n+1 etc"
+	#priority      = 1
+	#and_or        = "and" # or "or", defaults to "and" if not provided
+	#search_type   = "is"  # or any other supported search type
+	#value         = "Criterion Value"
+	#opening_paren = false # true or false, defaults to false if not provided
+	#closing_paren = false # true or false, defaults to false if not provided
+	#}
+
+}
+COREB
