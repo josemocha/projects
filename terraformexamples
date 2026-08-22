@@ -2,7 +2,7 @@
 
 ##https://jsontotable.org/hcl-validator
 
-
+##https://registry.terraform.io/providers/deploymenttheory/jamfpro/latest/docs/resources/department
 ###Building
 cat > ~/Desktop/buildings.tf << COREB
 resource "jamfpro_building" "New York" {
@@ -195,16 +195,49 @@ resource "jamfpro_smart_computer_group_v2" "OS_LessThan_27_Broussard" {
 		#opening_paren = false # true or false, defaults to false if not provided
 		#closing_paren = false # true or false, defaults to false if not provided
 	}
-
-	#criteria {
-	#name          = "Criterion Name #n+1 etc"
-	#priority      = 1
-	#and_or        = "and" # or "or", defaults to "and" if not provided
-	#search_type   = "is"  # or any other supported search type
-	#value         = "Criterion Value"
-	#opening_paren = false # true or false, defaults to false if not provided
-	#closing_paren = false # true or false, defaults to false if not provided
-	#}
-
 }
 COREB
+
+##Smart Group
+#https://registry.terraform.io/providers/deploymenttheory/jamfpro/latest/docs/resources/smart_computer_group_v2
+cat > ~/Desktop/terraform-jamfpro/BasicSmartGroup.tf << COREB
+resource "jamfpro_smart_computer_group_v2" "Basic_Smart_Group" {
+	name = "Basic Smart Group"
+
+	# Optional: Provide a description
+	description = "Less than OS 27 and Broussard Building."
+
+	# Optional: Specify site details 
+	##site_id = "5"
+
+	# Optional: Define criteria for Smart groups
+	criteria {
+		name        = "Operating System Version"
+		priority    = 0
+		search_type = "greater than or equal" # or any other supported search type
+		value       = "27"
+		#and_or      = "and" # or "or", defaults to "and" if not provided
+		#opening_paren = false # true or false, defaults to false if not provided
+		#closing_paren = false # true or false, defaults to false if not provided
+	}
+	criteria {
+		name        = "Building"
+		priority    = 1
+		search_type = "is" # or any other supported search type
+		value       = "Minneapolis"
+		and_or      = "and" # or "or", defaults to "and" if not provided
+		opening_paren = true # true or false, defaults to false if not provided
+		#closing_paren = false # true or false, defaults to false if not provided
+	}
+	criteria {
+		name        = "Building"
+		priority    = 2
+		search_type = "is" # or any other supported search type
+		value       = "New Jersey"
+		and_or      = "or" # or "or", defaults to "and" if not provided
+		#opening_paren = true # true or false, defaults to false if not provided
+		closing_paren = true # true or false, defaults to false if not provided
+	}
+
+COREB
+
